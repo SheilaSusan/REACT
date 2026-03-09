@@ -1,22 +1,62 @@
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
+import { useState } from 'react';
 
 interface CreateUserFormProps {
   setUserWasCreated: Dispatch<SetStateAction<boolean>>;
 }
 
-function CreateUserForm({}: CreateUserFormProps) {
+const BASE_URL = 'https://api.challenge.hennge.com/password-validation-challenge-api/001';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsib2NoaWVuZ3NoZWlsYTE3NUBnbWFpbC5jb20iXSwiaXNzIjoiaGVubmdlLWFkbWlzc2lvbi1jaGFsbGVuZ2UiLCJzdWIiOiJjaGFsbGVuZ2UifQ.3W2nkN7VnVrkgZF_pweFBbEixCochabxSccauDPrMxs';
+
+function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
+  const [username, setUsername] = useState('');
+  const [password , setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    fetch(`${BASE_URL}/challenge-signup`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type' : 'application/json', 
+        'Authorization' : `Bearer ${AUTH_TOKEN}`
+      },
+      body: JSON.stringify({username, password})
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        setUserWasCreated(true);
+      })
+      .catch(error => {
+        console.log('Error:', error)
+      });
+  }
+
   return (
     <div style={formWrapper}>
-      <form style={form}>
+      <form style={form} onSubmit={handleSubmit}>
         {/* make sure the username and password are submitted */}
         {/* make sure the inputs have the accessible names of their labels */}
-        <label style={formLabel}>Username</label>
-        <input style={formInput} />
+        <label style={formLabel} htmlFor="username">Username</label>
+        <input 
+          style={formInput}
+          id="username" 
+          name="username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+        />
 
-        <label style={formLabel}>Password</label>
-        <input style={formInput} />
+        <label style={formLabel} htmlFor="password">Password</label>
+        <input 
+          style={formInput} 
+          id="password"
+          name="password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
 
-        <button style={formButton}>Create User</button>
+        <button style={formButton} type="submit">Create User</button>
       </form>
     </div>
   );
