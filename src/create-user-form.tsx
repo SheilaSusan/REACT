@@ -11,9 +11,11 @@ const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsib2NoaWVuZ3N
 function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
   const [username, setUsername] = useState('');
   const [password , setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null); {/* resets error on every submission */}
 
     fetch(`${BASE_URL}/challenge-signup`, {
       method: 'POST',
@@ -23,13 +25,20 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
       },
       body: JSON.stringify({username, password})
     })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        setUserWasCreated(true);
+      .then(res => {
+        if(res.status === 200){
+          setUserWasCreated(true);
+        }else if(res.status === 401 || res.status ===403){
+          setErrorMessage('Not authenticated to access this resource.');
+        }else if(res.status === 422){
+          setErrorMessage('Sorry, the entered password is not allowed, please try a different one.');
+        }else{
+          setErrorMessage('Something went wrong, please try again.');
+        }
       })
-      .catch(error => {
-        console.log('Error:', error)
+      .catch(() => {
+        {/* only runs on network failure */}
+        setErrorMessage('Something went wrong, please try again.');
       });
   }
 
@@ -56,6 +65,7 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
           onChange={e => setPassword(e.target.value)}
         />
 
+        {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
         <button style={formButton} type="submit">Create User</button>
       </form>
     </div>
@@ -108,4 +118,9 @@ const formButton: CSSProperties = {
   marginTop: '8px',
   alignSelf: 'flex-end',
   cursor: 'pointer',
+};
+
+const errorStyle: CSSProperties = {
+  color: 'red',
+  fontSize: '14px',
 };
