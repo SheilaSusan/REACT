@@ -13,6 +13,7 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
   const [password , setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [UsernameError, setUsernameError] = useState<string | null>(null);
 
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
@@ -21,13 +22,25 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
     if(/\s/.test(password)) errors.push('Password cannot contain spaces');
     if(!/[0-9]/.test(password)) errors.push('Password must contain at least one number');
     if(!/[A-Z]/.test(password)) errors.push('Password must contain at least one uppercase letter');
-    if(!/[a-z]/.test(password)) errors.push('Password must contain at least one loercase letter');
+    if(!/[a-z]/.test(password)) errors.push('Password must contain at least one lowercase letter');
 
     return errors;
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null); {/* resets error on every submission */}
+
+    {/* blocks if username is empty*/}
+    if(!username.trim()){
+      setUsernameError('Username is required');
+      return;
+    }
+
+    {/* block if password has errors or is empty */}
+    if(passwordErrors.length > 0 || password === ''){
+      return;
+    }
+    setUsernameError(null);
 
     const errors = validatePassword(password);
     if(errors.length > 0){
@@ -72,16 +85,24 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
           id="username" 
           name="username"
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={e => {
+            setUsername(e.target.value);
+            if(e.target.value.trim()) setUsernameError(null); {/* clears when user types */}
+          }}
         />
-
+        {UsernameError && <p style={errorStyle}>{UsernameError}</p>}
+        
         <label style={formLabel} htmlFor="password">Password</label>
         <input 
           style={formInput} 
           id="password"
           name="password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={e => {
+            const value = e.target.value
+            setPassword(value)
+            setPasswordErrors(validatePassword(value)); {/* Runs every time you add a value, on every keystroke*/}
+          }}
         />
         {passwordErrors.length > 0 && (
           <ul>
