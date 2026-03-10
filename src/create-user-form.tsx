@@ -12,10 +12,29 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
   const [username, setUsername] = useState('');
   const [password , setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
 
+  const validatePassword = (password: string): string[] => {
+    const errors: string[] = [];
+    if(password.length < 10) errors.push('Password must be at least 10 characters long');
+    if(password.length > 24) errors.push('Passwords must be at most 24 characters long');
+    if(/\s/.test(password)) errors.push('Password cannot contain spaces');
+    if(!/[0-9]/.test(password)) errors.push('Password must contain at least one number');
+    if(!/[A-Z]/.test(password)) errors.push('Password must contain at least one uppercase letter');
+    if(!/[a-z]/.test(password)) errors.push('Password must contain at least one loercase letter');
+
+    return errors;
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null); {/* resets error on every submission */}
+
+    const errors = validatePassword(password);
+    if(errors.length > 0){
+      setPasswordErrors(errors);
+      return;
+    }
+      setPasswordErrors([]); {/* clears errors if all good*/}
 
     fetch(`${BASE_URL}/challenge-signup`, {
       method: 'POST',
@@ -64,6 +83,13 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
+        {passwordErrors.length > 0 && (
+          <ul>
+            {passwordErrors.map(error => (
+              <li key={error} style={errorStyle}>{error}</li>
+            ))}
+          </ul>
+        )}
 
         {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
         <button style={formButton} type="submit">Create User</button>
