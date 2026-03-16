@@ -105,20 +105,22 @@ function CreateUserForm({ setUserWasCreated}: CreateUserFormProps) {
           }}
         />
         {passwordErrors.length > 0 && (
-          <ul>
+          <ul style={validationList}>
             {passwordErrors.map(error => (
               <li key={error} style={errorStyle}>{error}</li>
             ))}
           </ul>
         )}
 
-        {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
+        {errorMessage && <p style={apiErrorStyle}>{errorMessage}</p>}
         <button style={formButton} type="submit">Create User</button>
       </form>
     </div>
   );
 }
 
+{/* The api errors only comes after the username and password are set successfully, the user tries to create user. If the something is wrong from the api end, then the api errors are dispalayed. Otherwise the code checks that the username and password is correct before being posted to the api to fetch data.*/}
+{/*The form does not make an API request when there is no username or when password is invalid */}
 export { CreateUserForm };
 
 const formWrapper: CSSProperties = {
@@ -170,4 +172,21 @@ const formButton: CSSProperties = {
 const errorStyle: CSSProperties = {
   color: 'red',
   fontSize: '14px',
+};
+
+const validationList: CSSProperties = {
+  margin: '4px 0',
+  paddingLeft: '20px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px'
+};
+
+const apiErrorStyle: CSSProperties = {
+  color: '#cc0000',
+  fontSize: '13px',
+  backgroundColor: '#fff0f0',
+  border: '1px solid #f5c2c2',
+  borderRadius: '4px',
+  padding: '8px 12px',
 };
